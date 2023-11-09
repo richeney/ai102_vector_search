@@ -1,0 +1,293 @@
+// Vector Search
+
+@index-name = my-vector-search-index
+@search-service-name = change_to_the_hostname_of_your_search_service
+@search-api-version = 2023-07-01-Preview
+@search-api-key = change_to_the_admin_key_of_your_search_service
+
+// @openai-service-name = training-JMN
+// @openai-api-version = 2023-05-15
+// @openai-api-key = 898fca5ad4d1439c903b9a85982e4b14
+// @openai-deployment-name = text-embedding-ada-002
+
+### Create / Update Index
+
+PUT https://{{search-service-name}}.search.windows.net/indexes/{{index-name}}?api-version={{search-api-version}} HTTP/1.1
+Content-Type: application/json
+api-key: {{search-api-key}}
+
+{
+    "@odata.context": "https://acs-enriched.search.windows.net/$metadata#indexes/$entity",
+    "@odata.etag": "\"0x8DBE13D5EF959DB\"",
+    "name": "product-catalog-index",
+    "defaultScoringProfile": null,
+    "fields": [
+        {
+            "name": "id",
+            "type": "Edm.String",
+            "searchable": true,
+            "filterable": true,
+            "retrievable": true,
+            "sortable": true,
+            "facetable": true,
+            "key": true,
+            "indexAnalyzer": null,
+            "searchAnalyzer": null,
+            "analyzer": null,
+            "normalizer": null,
+            "dimensions": null,
+            "vectorSearchConfiguration": null,
+            "synonymMaps": []
+        },
+        {
+            "name": "title",
+            "type": "Edm.String",
+            "searchable": true,
+            "filterable": true,
+            "retrievable": true,
+            "sortable": true,
+            "facetable": true,
+            "key": false,
+            "indexAnalyzer": null,
+            "searchAnalyzer": null,
+            "analyzer": null,
+            "normalizer": null,
+            "dimensions": null,
+            "vectorSearchConfiguration": null,
+            "synonymMaps": []
+        },
+        {
+            "name": "content",
+            "type": "Edm.String",
+            "searchable": true,
+            "filterable": true,
+            "retrievable": true,
+            "sortable": true,
+            "facetable": true,
+            "key": false,
+            "indexAnalyzer": null,
+            "searchAnalyzer": null,
+            "analyzer": null,
+            "normalizer": null,
+            "dimensions": null,
+            "vectorSearchConfiguration": null,
+            "synonymMaps": []
+        },
+        {
+            "name": "category",
+            "type": "Edm.String",
+            "searchable": true,
+            "filterable": true,
+            "retrievable": true,
+            "sortable": true,
+            "facetable": true,
+            "key": false,
+            "indexAnalyzer": null,
+            "searchAnalyzer": null,
+            "analyzer": null,
+            "normalizer": null,
+            "dimensions": null,
+            "vectorSearchConfiguration": null,
+            "synonymMaps": []
+        },
+        {
+            "name": "titleVector",
+            "type": "Collection(Edm.Single)",
+            "searchable": true,
+            "filterable": false,
+            "retrievable": true,
+            "sortable": false,
+            "facetable": false,
+            "key": false,
+            "indexAnalyzer": null,
+            "searchAnalyzer": null,
+            "analyzer": null,
+            "normalizer": null,
+            "dimensions": 1536,
+            "vectorSearchConfiguration": "my-vector-config",
+            "synonymMaps": []
+        },
+        {
+            "name": "contentVector",
+            "type": "Collection(Edm.Single)",
+            "searchable": true,
+            "filterable": false,
+            "retrievable": true,
+            "sortable": false,
+            "facetable": false,
+            "key": false,
+            "indexAnalyzer": null,
+            "searchAnalyzer": null,
+            "analyzer": null,
+            "normalizer": null,
+            "dimensions": 1536,
+            "vectorSearchConfiguration": "my-vector-config",
+            "synonymMaps": []
+        }
+    ],
+    "scoringProfiles": [],
+    "corsOptions": {
+        "allowedOrigins": [
+            "*"
+        ],
+        "maxAgeInSeconds": 60
+    },
+    "suggesters": [],
+    "analyzers": [],
+    "normalizers": [],
+    "tokenizers": [],
+    "tokenFilters": [],
+    "charFilters": [],
+    "encryptionKey": null,
+    "similarity": {
+        "@odata.type": "#Microsoft.Azure.Search.BM25Similarity",
+        "k1": null,
+        "b": null
+    },
+    "semantic": {
+        "defaultConfiguration": null,
+        "configurations": [
+            {
+                "name": "my-semantic-config",
+                "prioritizedFields": {
+                    "titleField": {
+                        "fieldName": "title"
+                    },
+                    "prioritizedContentFields": [
+                        {
+                            "fieldName": "content"
+                        }
+                    ],
+                    "prioritizedKeywordsFields": [
+                        {
+                            "fieldName": "category"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "vectorSearch": {
+        "algorithmConfigurations": [
+            {
+                "name": "my-vector-config",
+                "kind": "hnsw",
+                "hnswParameters": {
+                    "metric": "cosine",
+                    "m": 4,
+                    "efConstruction": 400,
+                    "efSearch": 500
+                },
+                "exhaustiveKnnParameters": null
+            }
+        ]
+    }
+}
+
+### Get Index
+
+GET https://{{search-service-name}}.search.windows.net/indexes/{{index-name}}?api-version={{search-api-version}} HTTP/1.1
+api-key: {{search-api-key}}
+Content-Type: application/json
+
+### Upload Documents
+
+POST https://{{search-service-name}}.search.windows.net/indexes/{{index-name}}/docs/index?api-version={{search-api-version}} HTTP/1.1
+api-key: {{search-api-key}}
+Content-Type: application/json
+
+< upload_documents.json
+
+### Create Query Embedding
+
+// POST https://{{openai-service-name}}.openai.azure.com/openai/deployments/{{openai-deployment-name}}/embeddings?api-version={{openai-api-version}} HTTP/1.1
+// Content-Type: application/json
+// api-key: {{openai-api-key}}
+//
+// {
+//     "input": "what azure services support full text search"
+// }
+
+### Single Vector Search
+
+POST https://{{search-service-name}}.search.windows.net/indexes/{{index-name}}/docs/search?api-version={{search-api-version}}
+api-key: {{search-api-key}}
+Content-Type: application/json
+
+< single_vector_search.json
+
+### Single Vector Search w/ Filter
+
+POST https://{{search-service-name}}.search.windows.net/indexes/{{index-name}}/docs/search?api-version={{search-api-version}}
+api-key: {{search-api-key}}
+Content-Type: application/json
+
+< single_vector_search_with_filter.json
+
+### Simple Hybrid Search
+
+POST https://{{search-service-name}}.search.windows.net/indexes/{{index-name}}/docs/search?api-version={{search-api-version}}
+api-key: {{search-api-key}}
+Content-Type: application/json
+
+< simple_hybrid_search.json
+
+### Simple Hybrid Search w/ Filter
+
+POST https://{{search-service-name}}.search.windows.net/indexes/{{index-name}}/docs/search?api-version={{search-api-version}}
+api-key: {{search-api-key}}
+Content-Type: application/json
+
+< simple_hybrid_search_with_filter.json
+
+### Cross-Field Vector Search
+
+POST https://{{search-service-name}}.search.windows.net/indexes/{{index-name}}/docs/search?api-version={{search-api-version}}
+api-key: {{search-api-key}}
+Content-Type: application/json
+
+< cross_field_vector_search.json
+
+### Multi-Query Vector Search
+
+POST https://{{search-service-name}}.search.windows.net/indexes/{{index-name}}/docs/search?api-version={{search-api-version}}
+api-key: {{search-api-key}}
+Content-Type: application/json
+
+< multi_query_vector_search.json
+
+### Semantic Hybrid Search
+
+POST https://{{search-service-name}}.search.windows.net/indexes/{{index-name}}/docs/search?api-version={{search-api-version}} HTTP/1.1
+api-key: {{search-api-key}}
+Content-Type: application/json
+
+< semantic_hybrid_search.json
+
+### Semantic Hybrid Search w/ Filter
+
+POST https://{{search-service-name}}.search.windows.net/indexes/{{index-name}}/docs/search?api-version={{search-api-version}} HTTP/1.1
+api-key: {{search-api-key}}
+Content-Type: application/json
+
+< semantic_hybrid_search_with_filter.json
+
+### Get Index Statistics
+
+GET https://{{search-service-name}}.search.windows.net/indexes/{{index-name}}/stats?api-version={{search-api-version}} HTTP/1.1
+api-key: {{search-api-key}}
+Content-Type: application/json
+
+### Get Service Statistics
+
+GET https://{{search-service-name}}.search.windows.net/servicestats?api-version={{search-api-version}} HTTP/1.1
+api-key: {{search-api-key}}
+Content-Type: application/json
+
+### Delete Index
+
+DELETE https://{{search-service-name}}.search.windows.net/indexes/{{index-name}}?api-version={{search-api-version}} HTTP/1.1
+api-key: {{search-api-key}}
+Content-Type: application/json
+
+###
